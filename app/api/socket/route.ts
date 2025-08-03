@@ -1,6 +1,5 @@
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { Server as SocketIOServer } from "socket.io"
-import { createServer } from "http"
 
 interface Student {
   id: string
@@ -29,28 +28,31 @@ const students: Map<string, Student> = new Map()
 const answers: Map<string, string> = new Map()
 const pollHistory: Array<{ question: Question; results: PollResult[] }> = []
 
-let io: SocketIOServer | null = null
+// Global Socket.IO server instance
+declare global {
+  var io: SocketIOServer | undefined
+}
 
 export const dynamic = "force-dynamic"
 
-function initializeSocket() {
-  if (io) return io
+// Initialize Socket.IO server
+function initializeSocketIO(res: any) {
+  if (globalThis.io) {
+    return globalThis.io
+  }
 
-  // Create HTTP server for Socket.IO
-  const httpServer = createServer()
-  
-  io = new SocketIOServer(httpServer, {
-    path: "/api/socket",
-    addTrailingSlash: false,
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-    },
-    transports: ["polling", "websocket"],
-  })
+  try {
+    const io = new SocketIOServer(res.socket.server, {
+      path: "/api/socket",
+      addTrailingSlash: false,
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+      },
+    })
 
-  // Helper function to calculate results
-  const calculateResults = (): PollResult[] => {
+    // Helper function to calculate results
+    const calculateResults = (): PollResult[] => {
       if (!currentQuestion) return []
 
       const results: PollResult[] = currentQuestion.options.map((option) => ({
@@ -283,10 +285,52 @@ function initializeSocket() {
       })
     })
 
+    globalThis.io = io
     res.socket.server.io = io
+    console.log("Socket.IO server initialized")
+    return io
+  } catch (error) {
+    console.error("Error initializing Socket.IO:", error)
+    return null
   }
-
-  return new Response("Socket.IO server initialized", { status: 200 })
 }
 
-export { SocketHandler as GET, SocketHandler as POST }
+export async function GET(req: NextRequest, { params }: { params: any }) {
+  try {
+    const res = params?.res || (req as any).res
+    if (!res?.socket?.server?.io) {
+      initializeSocketIO(res)
+    }
+    
+    return NextResponse.json({ 
+      message: "Socket.IO server is running",
+      path: "/api/socket"
+    })
+  } catch (error) {
+    console.error("Socket.IO GET error:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(req: NextRequest, { params }: { params: any }) {
+  try {
+    const res = params?.res || (req as any).res
+    if (!res?.socket?.server?.io) {
+      initializeSocketIO(res)
+    }
+    
+    return NextResponse.json({ 
+      message: "Socket.IO server is running",
+      path: "/api/socket"
+    })
+  } catch (error) {
+    console.error("Socket.IO POST error:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
