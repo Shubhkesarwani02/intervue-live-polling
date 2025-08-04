@@ -114,31 +114,31 @@ export default function StudentPage() {
   const ConnectionStatus = () => (
     <div className="fixed top-4 right-4 z-50">
       <div
-        className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
-          isLoading ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
+        className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm backdrop-blur shadow-lg ${
+          isLoading ? "bg-yellow-500/90 text-white" : "bg-green-500/90 text-white"
         }`}
       >
         {isLoading ? <WifiOff className="w-4 h-4" /> : <Wifi className="w-4 h-4" />}
-        <span>{isLoading ? "Connecting..." : "Connected"}</span>
+        <span className="font-medium">{isLoading ? "Connecting..." : "Connected"}</span>
       </div>
     </div>
   )
 
   if (isKickedOut) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800 flex items-center justify-center p-4">
         <ConnectionStatus />
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-6">
-            <div className="w-16 h-16 bg-red-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <span className="text-red-600 text-2xl">!</span>
+        <Card className="w-full max-w-lg bg-white rounded-2xl shadow-2xl text-center">
+          <CardContent className="pt-12 pb-12 px-8">
+            <div className="w-16 h-16 bg-red-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+              <span className="text-red-600 text-3xl">!</span>
             </div>
-            <h2 className="text-xl font-bold mb-2">You've been Kicked out!</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-3xl font-bold mb-4 text-gray-900">You've been Kicked out!</h2>
+            <p className="text-gray-600 mb-8 text-lg leading-relaxed">
               Looks like the teacher has removed you from the poll session. Please try again tomorrow.
             </p>
-            <div className="w-12 h-12 bg-purple-600 rounded-lg mx-auto flex items-center justify-center">
-              <span className="text-white font-bold">P</span>
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-2xl">P</span>
             </div>
           </CardContent>
         </Card>
@@ -148,40 +148,39 @@ export default function StudentPage() {
 
   if (!isNameSet) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <ConnectionStatus />
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-12 h-12 bg-purple-600 rounded-lg mx-auto mb-4 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">P</span>
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800 flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg bg-white rounded-2xl shadow-2xl">
+          <CardHeader className="text-center pb-6 pt-8 px-8">
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-2xl">P</span>
             </div>
-            <CardTitle className="text-2xl font-bold">Let's Get Started</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-3xl font-bold text-gray-900 mb-3">Let's Get Started</CardTitle>
+            <CardDescription className="text-gray-600 text-lg leading-relaxed">
               If you're a student, use this tool to submit your answers, participate in live polls, and view results in
               real-time.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-8 pb-8 space-y-6">
             <div>
-              <Label htmlFor="name">Enter your Name</Label>
+              <Label htmlFor="name" className="text-lg font-semibold text-gray-900 mb-3 block">Enter your Name</Label>
               <Input
                 id="name"
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
                 placeholder="Rahul Raju"
-                className="mt-1"
+                className="text-lg p-4 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:ring-purple-400"
                 onKeyPress={(e) => e.key === "Enter" && handleNameSubmit()}
               />
             </div>
             <Button
-              className="w-full bg-purple-600 hover:bg-purple-700"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
               onClick={handleNameSubmit}
               disabled={!studentName.trim() || isLoading}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Loading...
+                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                  Connecting...
                 </>
               ) : (
                 "Continue"
@@ -195,16 +194,16 @@ export default function StudentPage() {
 
   if (isWaiting || !currentQuestion) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800 flex items-center justify-center p-4">
         <ConnectionStatus />
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-6">
-            <div className="w-12 h-12 bg-purple-600 rounded-lg mx-auto mb-4 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">P</span>
+        <Card className="w-full max-w-lg bg-white rounded-2xl shadow-2xl text-center">
+          <CardContent className="pt-12 pb-12 px-8">
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-2xl">P</span>
             </div>
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-600" />
-            <h2 className="text-xl font-bold mb-2">Wait for the teacher to ask questions..</h2>
-            <p className="text-gray-500 text-sm">Connected as: {studentName}</p>
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-6 text-purple-600" />
+            <h2 className="text-2xl font-bold mb-4 text-gray-900">Wait for the teacher to ask questions..</h2>
+            <p className="text-gray-600 text-lg">Connected as: <span className="font-semibold">{studentName}</span></p>
           </CardContent>
         </Card>
       </div>
@@ -213,53 +212,58 @@ export default function StudentPage() {
 
   if (hasAnswered || timeLeft === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800 p-4">
         <ConnectionStatus />
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-8 text-white">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">P</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold">Question Results</h1>
-                <Badge variant="destructive" className="text-xs">
-                  {timeLeft === 0 ? "Time's Up!" : "Answered"}
-                </Badge>
+                <h1 className="text-2xl font-bold">Question 1</h1>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <Badge variant="secondary" className="text-sm bg-green-500 hover:bg-green-600">
+                    {timeLeft === 0 ? "Time's Up!" : "Answered"}
+                  </Badge>
+                </div>
               </div>
             </div>
           </div>
 
-          <Card>
-            <CardHeader className="bg-gray-800 text-white">
-              <CardTitle className="text-lg">{currentQuestion?.question}</CardTitle>
+          <Card className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-8">
+              <CardTitle className="text-2xl font-bold">{currentQuestion?.question}</CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-8">
               {pollResults.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {pollResults.map((result, index) => (
-                    <div key={index} className="space-y-2">
+                    <div key={index} className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-4">
                           <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                              selectedAnswer === result.option ? "bg-purple-600" : "bg-gray-400"
+                            className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md ${
+                              selectedAnswer === result.option 
+                                ? "bg-gradient-to-r from-purple-600 to-blue-600" 
+                                : "bg-gray-400"
                             }`}
                           >
-                            <span className="text-white text-xs font-bold">{String.fromCharCode(65 + index)}</span>
+                            <span className="text-white text-sm font-bold">{String.fromCharCode(65 + index)}</span>
                           </div>
-                          <span className="font-medium">{result.option}</span>
+                          <span className="font-medium text-lg text-gray-900">{result.option}</span>
                           {selectedAnswer === result.option && (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="text-sm bg-purple-100 text-purple-700">
                               Your answer
                             </Badge>
                           )}
                         </div>
-                        <span className="font-bold">{result.percentage}%</span>
+                        <span className="font-bold text-xl text-gray-900">{result.percentage}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                         <div
-                          className="bg-purple-600 h-3 rounded-full transition-all duration-500"
+                          className="bg-gradient-to-r from-purple-600 to-blue-600 h-4 rounded-full transition-all duration-1000 ease-out"
                           style={{ width: `${result.percentage}%` }}
                         />
                       </div>
@@ -267,13 +271,13 @@ export default function StudentPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-600" />
-                  <p className="text-gray-600">Calculating results...</p>
+                <div className="text-center py-12">
+                  <Loader2 className="w-12 h-12 animate-spin mx-auto mb-6 text-purple-600" />
+                  <p className="text-gray-600 text-lg">Calculating results...</p>
                 </div>
               )}
-              <div className="mt-6 text-center">
-                <p className="text-gray-600">Wait for the teacher to ask a new question.</p>
+              <div className="mt-8 text-center p-6 bg-gray-50 rounded-xl">
+                <p className="text-gray-600 text-lg">Wait for the teacher to ask a new question.</p>
               </div>
             </CardContent>
           </Card>
@@ -283,37 +287,40 @@ export default function StudentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800 p-4">
       <ConnectionStatus />
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-8 text-white">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">P</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold">Question 1</h1>
-              <Badge variant="destructive" className="text-xs">
-                00:{timeLeft.toString().padStart(2, "0")}
-              </Badge>
+              <h1 className="text-2xl font-bold">Question 1</h1>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                <Badge variant="destructive" className="text-sm bg-red-500 hover:bg-red-600">
+                  00:{timeLeft.toString().padStart(2, "0")}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
 
-        <Card>
-          <CardHeader className="bg-gray-800 text-white">
-            <CardTitle className="text-lg">{currentQuestion?.question}</CardTitle>
+        <Card className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-8">
+            <CardTitle className="text-2xl font-bold">{currentQuestion?.question}</CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-8">
             <RadioGroup value={selectedAnswer} onValueChange={setSelectedAnswer}>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {currentQuestion?.options.map((option, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value={option} id={option} />
-                    <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                      <span className="text-gray-600 text-xs font-bold">{String.fromCharCode(65 + index)}</span>
+                  <div key={index} className="flex items-center space-x-4 p-6 border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 cursor-pointer transition-all duration-200">
+                    <RadioGroupItem value={option} id={option} className="border-2 border-purple-400" />
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+                      <span className="text-white text-sm font-bold">{String.fromCharCode(65 + index)}</span>
                     </div>
-                    <Label htmlFor={option} className="flex-1 cursor-pointer font-medium">
+                    <Label htmlFor={option} className="flex-1 cursor-pointer font-medium text-lg text-gray-900">
                       {option}
                     </Label>
                   </div>
@@ -321,7 +328,7 @@ export default function StudentPage() {
               </div>
             </RadioGroup>
             <Button
-              className="w-full mt-6 bg-purple-600 hover:bg-purple-700"
+              className="w-full mt-8 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
               onClick={handleAnswerSubmit}
               disabled={!selectedAnswer || isLoading}
             >
