@@ -5,23 +5,7 @@ const { Server } = require('socket.io')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
-const por        // Add to history
-        pollHistory.push({
-          question: currentQuestion,
-          results,
-        })
-
-        // Reset current question
-        currentQuestion = null
-
-        // Send results to everyone
-        io.emit("poll-results", results)
-        io.to("teachers").emit("poll-ended", results)
-        
-        // Send updated poll history to teachers
-        io.to("teachers").emit("poll-history", pollHistory)
-
-        console.log("Poll ended automatically after 60 seconds maximum")v.PORT || 3000
+const port = process.env.PORT || 3000
 
 const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
@@ -193,6 +177,9 @@ app.prepare().then(() => {
           // Send results to everyone
           io.emit("poll-results", results)
           io.to("teachers").emit("poll-ended", results)
+          
+          // Send updated poll history to teachers
+          io.to("teachers").emit("poll-history", pollHistory)
 
           console.log("Poll ended automatically after 60 seconds maximum")
         }
