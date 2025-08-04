@@ -18,7 +18,10 @@ export function useSocket(options: UseSocketOptions = {}) {
 
     setIsConnecting(true)
 
-    const socket = io({
+    // Use environment variable for WebSocket URL
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "ws://localhost:3001"
+    
+    const socket = io(socketUrl, {
       transports: ["websocket", "polling"],
       upgrade: true,
       rememberUpgrade: true,
