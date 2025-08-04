@@ -1,6 +1,4 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
   "framework": "nextjs",
   "rewrites": [
     {
@@ -8,9 +6,6 @@
       "destination": "/api/socket"
     }
   ],
-  "env": {
-    "NEXT_PUBLIC_SOCKET_URL": "@socket_url"
-  },
   "functions": {
     "app/api/socket/route.ts": {
       "maxDuration": 30
