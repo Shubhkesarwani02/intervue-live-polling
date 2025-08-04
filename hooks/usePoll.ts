@@ -130,6 +130,11 @@ export function usePoll() {
         currentQuestion: null,
         results,
       }))
+      
+      // Request updated poll history when poll ends
+      if (socket) {
+        socket.emit("get-poll-history")
+      }
     })
 
     // Handle being kicked out

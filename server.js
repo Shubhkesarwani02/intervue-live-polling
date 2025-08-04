@@ -5,7 +5,23 @@ const { Server } = require('socket.io')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
-const port = process.env.PORT || 3000
+const por        // Add to history
+        pollHistory.push({
+          question: currentQuestion,
+          results,
+        })
+
+        // Reset current question
+        currentQuestion = null
+
+        // Send results to everyone
+        io.emit("poll-results", results)
+        io.to("teachers").emit("poll-ended", results)
+        
+        // Send updated poll history to teachers
+        io.to("teachers").emit("poll-history", pollHistory)
+
+        console.log("Poll ended automatically after 60 seconds maximum")v.PORT || 3000
 
 const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
@@ -203,13 +219,16 @@ app.prepare().then(() => {
       // Send results to the student who just answered
       socket.emit("poll-results", results)
 
-      // Update teachers with new answer
+      // Update teachers with new answer and live results
       io.to("teachers").emit("student-answered", {
         studentId: socket.id,
         studentName: student.name,
         answer: answerData.answer,
         results,
       })
+      
+      // Send live poll results update to all teachers
+      io.to("teachers").emit("poll-results-updated", results)
 
       broadcastStudentList()
 
@@ -228,6 +247,10 @@ app.prepare().then(() => {
         // End poll early
         io.emit("poll-results", results)
         io.to("teachers").emit("poll-ended", results)
+        
+        // Send updated poll history to teachers
+        io.to("teachers").emit("poll-history", pollHistory)
+        
         console.log("All students answered - poll ended early")
       }
     })
@@ -249,6 +272,9 @@ app.prepare().then(() => {
         // Send results to everyone
         io.emit("poll-results", results)
         io.to("teachers").emit("poll-ended", results)
+        
+        // Send updated poll history to teachers
+        io.to("teachers").emit("poll-history", pollHistory)
 
         console.log("Poll ended manually by teacher")
       }

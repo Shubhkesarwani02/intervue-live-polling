@@ -42,11 +42,21 @@ export default function TeacherPage() {
   const [timeLimit, setTimeLimit] = useState(60)
   const [showHistory, setShowHistory] = useState(false)
   const [showChat, setShowChat] = useState(false)
+  const [historyUpdateIndicator, setHistoryUpdateIndicator] = useState(false)
 
   const { pollStatus, isLoading, error, startPoll, endPoll, kickStudent, joinAsTeacher } = usePoll()
 
   const { currentQuestion: activeQuestion, students, results: pollResults, pollHistory } = pollStatus
   const isPolling = !!activeQuestion
+
+  // Show indicator when poll history is updated
+  useEffect(() => {
+    if (pollHistory.length > 0) {
+      setHistoryUpdateIndicator(true)
+      const timer = setTimeout(() => setHistoryUpdateIndicator(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [pollHistory.length])
 
   // Join as teacher when component mounts
   useEffect(() => {
@@ -189,9 +199,20 @@ export default function TeacherPage() {
             <h1 className="text-3xl font-bold">Teacher Dashboard</h1>
           </div>
           <div className="flex space-x-3">
-            <Button variant="outline" onClick={() => setShowHistory(true)} className="bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowHistory(true)} 
+              className={`bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20 transition-all duration-300 ${
+                historyUpdateIndicator ? 'ring-2 ring-yellow-400 animate-pulse' : ''
+              }`}
+            >
               <History className="w-4 h-4 mr-2" />
               View Poll History
+              {historyUpdateIndicator && (
+                <Badge variant="secondary" className="ml-2 bg-yellow-400 text-black text-xs">
+                  New
+                </Badge>
+              )}
             </Button>
             <Dialog open={showChat} onOpenChange={setShowChat}>
               <DialogTrigger asChild>
@@ -230,11 +251,24 @@ export default function TeacherPage() {
                 {activeQuestion ? (
                   <div>
                     <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-xl mb-6">
-                      <h3 className="font-semibold text-xl">{activeQuestion.question}</h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-xl">{activeQuestion.question}</h3>
+                        <div className="flex items-center space-x-2">
+                          <div className="bg-blue-500 px-3 py-1 rounded-full text-sm">
+                            {students.filter(s => s.hasAnswered).length}/{students.length} answered
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {pollResults.length > 0 ? (
                       <div className="space-y-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-lg font-semibold text-gray-800">Live Results</h4>
+                          <Badge variant="secondary" className="animate-pulse bg-blue-500 text-white">
+                            Updating Live
+                          </Badge>
+                        </div>
                         {pollResults.map((result, index) => (
                           <div key={index} className="space-y-3">
                             <div className="flex items-center justify-between">
