@@ -30,10 +30,10 @@ export default function StudentPage() {
   const [selectedAnswer, setSelectedAnswer] = useState("")
   const [hasAnswered, setHasAnswered] = useState(false)
   const [timeLeft, setTimeLeft] = useState(60)
-  const [isKickedOut, setIsKickedOut] = useState(false)
   const [isWaiting, setIsWaiting] = useState(true)
+  const [tabId] = useState(() => `tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   
-  const { pollStatus, isLoading, submitAnswer, joinAsStudent } = usePoll()
+  const { pollStatus, isLoading, isKickedOut, submitAnswer, joinAsStudent } = usePoll()
   const { currentQuestion, results: pollResults } = pollStatus
 
   // Check if student has answered
@@ -41,14 +41,26 @@ export default function StudentPage() {
     if (currentQuestion && isNameSet) {
       const student = pollStatus.students.find(s => s.name === studentName)
       setHasAnswered(student?.hasAnswered || false)
+      setSelectedAnswer(student?.answer || "")
     }
   }, [pollStatus.students, studentName, currentQuestion, isNameSet])
 
+  // Reset student state when poll ends
+  useEffect(() => {
+    if (!currentQuestion) {
+      setHasAnswered(false)
+      setSelectedAnswer("")
+      setTimeLeft(60)
+    }
+  }, [currentQuestion])
+
   // Timer countdown
   useEffect(() => {
-    if (currentQuestion) {
+    if (currentQuestion && currentQuestion.timeLeft !== undefined) {
+      setTimeLeft(Math.min(currentQuestion.timeLeft, 60)) // Ensure max 60 seconds
+    } else if (currentQuestion) {
       const startTime = currentQuestion.startTime
-      const timeLimit = currentQuestion.timeLimit * 1000 // Convert to milliseconds
+      const timeLimit = Math.min(currentQuestion.timeLimit, 60) * 1000 // Ensure max 60 seconds, convert to milliseconds
       const elapsed = Date.now() - startTime
       const remaining = Math.max(0, timeLimit - elapsed)
       setTimeLeft(Math.ceil(remaining / 1000))
@@ -57,10 +69,12 @@ export default function StudentPage() {
         const timer = setInterval(() => {
           const newElapsed = Date.now() - startTime
           const newRemaining = Math.max(0, timeLimit - newElapsed)
-          setTimeLeft(Math.ceil(newRemaining / 1000))
+          const newTimeLeft = Math.ceil(newRemaining / 1000)
+          setTimeLeft(newTimeLeft)
           
           if (newRemaining <= 0) {
             clearInterval(timer)
+            setHasAnswered(true) // Auto-submit when time is up
           }
         }, 1000)
         
@@ -74,27 +88,27 @@ export default function StudentPage() {
     setIsWaiting(!currentQuestion && !pollResults.length)
   }, [currentQuestion, pollResults])
 
-  const handleNameSubmit = useCallback(async () => {
+  const handleNameSubmit = useCallback(() => {
     if (studentName.trim()) {
-      const studentId = `student_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const success = await joinAsStudent(studentId, studentName.trim())
+      const uniqueStudentId = `${tabId}_${studentName.replace(/\s+/g, '_')}`
+      const success = joinAsStudent(uniqueStudentId, `${studentName.trim()} (${tabId.slice(-4)})`)
       if (success) {
         setIsNameSet(true)
         console.log("Joined as student:", studentName.trim())
       }
     }
-  }, [studentName, joinAsStudent])
+  }, [studentName, tabId, joinAsStudent])
 
-  const handleAnswerSubmit = useCallback(async () => {
+  const handleAnswerSubmit = useCallback(() => {
     if (selectedAnswer && currentQuestion && studentName) {
-      const studentId = `student_${studentName.replace(/\s+/g, '_')}`
-      const success = await submitAnswer(studentId, studentName, selectedAnswer)
+      const uniqueStudentId = `${tabId}_${studentName.replace(/\s+/g, '_')}`
+      const success = submitAnswer(uniqueStudentId, `${studentName.trim()} (${tabId.slice(-4)})`, selectedAnswer)
       if (success) {
         console.log("Submitted answer:", selectedAnswer)
         setHasAnswered(true)
       }
     }
-  }, [selectedAnswer, currentQuestion, studentName, submitAnswer])
+  }, [selectedAnswer, currentQuestion, studentName, tabId, submitAnswer])
 
   // Connection status indicator
   const ConnectionStatus = () => (
@@ -105,7 +119,7 @@ export default function StudentPage() {
         }`}
       >
         {isLoading ? <WifiOff className="w-4 h-4" /> : <Wifi className="w-4 h-4" />}
-        <span>{isLoading ? "Loading..." : "Connected"}</span>
+        <span>{isLoading ? "Connecting..." : "Connected"}</span>
       </div>
     </div>
   )
@@ -208,9 +222,9 @@ export default function StudentPage() {
                 <span className="text-white font-bold text-sm">P</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold">Question 1</h1>
+                <h1 className="text-xl font-bold">Question Results</h1>
                 <Badge variant="destructive" className="text-xs">
-                  00:00
+                  {timeLeft === 0 ? "Time's Up!" : "Answered"}
                 </Badge>
               </div>
             </div>

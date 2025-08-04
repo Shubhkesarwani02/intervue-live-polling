@@ -123,10 +123,20 @@ app.prepare().then(() => {
 
     // Teacher asks a new question
     socket.on("ask-question", (questionData) => {
+      // Only allow new questions if no active question OR all students have answered
+      if (currentQuestion) {
+        const allAnswered = Array.from(students.values()).every((s) => s.hasAnswered)
+        if (!allAnswered) {
+          socket.emit("error", { message: "Cannot ask new question while current poll is active" })
+          return
+        }
+      }
+
       currentQuestion = {
         ...questionData,
         id: Date.now().toString(),
         startTime: Date.now(),
+        timeLimit: Math.min(questionData.timeLimit, 60), // Ensure maximum 60 seconds
       }
 
       // Store the question ID for the timer check
@@ -138,6 +148,7 @@ app.prepare().then(() => {
       // Reset student answered status
       students.forEach((student) => {
         student.hasAnswered = false
+        student.answer = undefined
       })
 
       console.log("New question asked:", currentQuestion.question)
@@ -149,7 +160,7 @@ app.prepare().then(() => {
       io.to("teachers").emit("question-started", currentQuestion)
       broadcastStudentList()
 
-      // Set timer for automatic results
+      // Set timer for automatic results (maximum 60 seconds)
       setTimeout(() => {
         if (currentQuestion?.id === questionId) {
           const results = calculateResults()
@@ -160,13 +171,16 @@ app.prepare().then(() => {
             results,
           })
 
+          // Reset current question
+          currentQuestion = null
+
           // Send results to everyone
           io.emit("poll-results", results)
           io.to("teachers").emit("poll-ended", results)
 
-          console.log("Poll ended automatically")
+          console.log("Poll ended automatically after 60 seconds maximum")
         }
-      }, questionData.timeLimit * 1000)
+      }, Math.min(questionData.timeLimit, 60) * 1000)
     })
 
     // Student submits answer
@@ -208,10 +222,35 @@ app.prepare().then(() => {
           results,
         })
 
+        // Reset current question
+        currentQuestion = null
+
         // End poll early
         io.emit("poll-results", results)
         io.to("teachers").emit("poll-ended", results)
         console.log("All students answered - poll ended early")
+      }
+    })
+
+    // Teacher manually ends poll
+    socket.on("end-poll", () => {
+      if (currentQuestion) {
+        const results = calculateResults()
+
+        // Add to history
+        pollHistory.push({
+          question: currentQuestion,
+          results,
+        })
+
+        // Reset current question
+        currentQuestion = null
+
+        // Send results to everyone
+        io.emit("poll-results", results)
+        io.to("teachers").emit("poll-ended", results)
+
+        console.log("Poll ended manually by teacher")
       }
     })
 

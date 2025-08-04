@@ -19,7 +19,6 @@ export function useSocket(options: UseSocketOptions = {}) {
     setIsConnecting(true)
 
     const socket = io({
-      path: "/api/socket",
       transports: ["websocket", "polling"],
       upgrade: true,
       rememberUpgrade: true,

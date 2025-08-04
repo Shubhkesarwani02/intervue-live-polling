@@ -43,10 +43,15 @@ export default function TeacherPage() {
   const [showHistory, setShowHistory] = useState(false)
   const [showChat, setShowChat] = useState(false)
 
-  const { pollStatus, isLoading, startPoll, endPoll, kickStudent } = usePoll()
+  const { pollStatus, isLoading, error, startPoll, endPoll, kickStudent, joinAsTeacher } = usePoll()
 
   const { currentQuestion: activeQuestion, students, results: pollResults, pollHistory } = pollStatus
   const isPolling = !!activeQuestion
+
+  // Join as teacher when component mounts
+  useEffect(() => {
+    joinAsTeacher()
+  }, [joinAsTeacher])
 
   const addOption = () => {
     setOptions([...options, ""])
@@ -68,7 +73,7 @@ export default function TeacherPage() {
     if (currentQuestion && options.every((opt) => opt.trim())) {
       const filteredOptions = options.filter((opt) => opt.trim())
       
-      const success = await startPoll(currentQuestion, filteredOptions, timeLimit)
+      const success = startPoll(currentQuestion, filteredOptions, timeLimit)
       
       if (success) {
         console.log("Asked question:", { currentQuestion, options: filteredOptions, timeLimit })
@@ -82,8 +87,8 @@ export default function TeacherPage() {
   }, [currentQuestion, options, timeLimit, startPoll])
 
   const kickOutStudent = useCallback(
-    async (studentId: string) => {
-      const success = await kickStudent(studentId)
+    (studentId: string) => {
+      const success = kickStudent(studentId)
       if (success) {
         console.log("Kicked out student:", studentId)
       }
@@ -91,8 +96,8 @@ export default function TeacherPage() {
     [kickStudent],
   )
 
-  const resetPoll = useCallback(async () => {
-    await endPoll()
+  const resetPoll = useCallback(() => {
+    endPoll()
   }, [endPoll])
 
   // Connection status indicator
@@ -104,7 +109,7 @@ export default function TeacherPage() {
         }`}
       >
         {isLoading ? <WifiOff className="w-4 h-4" /> : <Wifi className="w-4 h-4" />}
-        <span>{isLoading ? "Loading..." : "Connected"}</span>
+        <span>{isLoading ? "Connecting..." : "Connected"}</span>
       </div>
     </div>
   )
@@ -170,6 +175,11 @@ export default function TeacherPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <ConnectionStatus />
+      {error && (
+        <div className="fixed top-16 right-4 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
@@ -326,20 +336,26 @@ export default function TeacherPage() {
                         id="time-limit"
                         type="number"
                         value={timeLimit}
-                        onChange={(e) => setTimeLimit(Math.max(10, Number.parseInt(e.target.value) || 60))}
+                        onChange={(e) => setTimeLimit(Math.max(10, Math.min(60, Number.parseInt(e.target.value) || 60)))}
                         min="10"
-                        max="300"
+                        max="60"
                         className="mt-1"
                       />
+                      <p className="text-xs text-gray-500 mt-1">Maximum 60 seconds allowed</p>
                     </div>
 
                     <Button
                       className="w-full bg-purple-600 hover:bg-purple-700"
                       onClick={handleAskQuestion}
-                      disabled={!currentQuestion || !options.every((opt) => opt.trim()) || isLoading}
+                      disabled={!currentQuestion || !options.every((opt) => opt.trim()) || isLoading || isPolling}
                     >
-                      Ask Question
+                      {isPolling ? "Poll Active - Wait for completion" : "Ask Question"}
                     </Button>
+                    {isPolling && (
+                      <p className="text-xs text-orange-600 mt-2 text-center">
+                        Wait for all students to answer or poll to end before asking a new question
+                      </p>
+                    )}
                   </div>
                 )}
               </CardContent>
